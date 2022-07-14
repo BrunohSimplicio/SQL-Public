@@ -14,25 +14,25 @@
 -- Adicionar conta de e-mail
 execute msdb.dbo.sysmail_add_account_sp
     -- Dados fíxos
-    @mailserver_name = 'smtp.gmail.com', -- endereço do servidor de envio de e-mails
+    @mailserver_name = 'smtp.email.com', -- endereço do servidor de envio de e-mails
     @port = 587, -- porta de comunicação
     @enable_ssl = 1, -- habilitar SSL (criptografia durante o envio de dados)
     -- Dados da sua conta
-    @account_name = 'Agenda Licitação', -- nome da conta dentro do SQL
-    @display_name = 'Agenda Licitação',   -- Nome que aparecerá como remetente do e-mail
-    @email_address = 'agenda.licitacaoproh@gmail.com',
-    @username = 'agenda.licitacaoproh@gmail.com',
+    @account_name = 'NOME EMAIL', -- nome da conta dentro do SQL
+    @display_name = 'NOME EMAIL',   -- Nome que aparecerá como remetente do e-mail
+    @email_address = 'email@email.com',
+    @username = 'email@email.com',
     @password = 'Pr0cf1t@admin'
  
 -- Passo 4) Adicionar perfil e associar a conta
 -- Adicionar perfil para envio de e-mail
 execute msdb.dbo.sysmail_add_profile_sp
-    @profile_name = 'Agenda Licitação',
-    @description = 'Perfil para envio de pregões.'
+    @profile_name = 'NOME EMAIL',
+    @description = 'Perfil para envio de email.'
 -- Associar o perfil a conta
 execute msdb.dbo.sysmail_add_profileaccount_sp
-    @profile_name = 'Agenda Licitação',
-    @account_name = 'Agenda Licitação',
+    @profile_name = 'NOME EMAIL',
+    @account_name = 'NOME EMAIL',
     @sequence_number = 1
  
  
@@ -41,8 +41,8 @@ execute msdb.dbo.sysmail_add_profileaccount_sp
  
 -- ENVIAR UM E-MAIL DE TESTES PELO SQL! (help: https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-send-dbmail-transact-sql)
 execute msdb.dbo.sp_send_dbmail 
-    @profile_name = 'Agenda Licitação',
-    @recipients = 'brunoh_simplicio@hotmail.com',
+    @profile_name = 'NOME EMAIL',
+    @recipients = 'brunoh_simplicio@email.com',
     @subject = 'Assunto - Teste Database Mail',
     @body = 'Corpo da mensagem de teste.'
  
@@ -74,9 +74,9 @@ execute msdb.dbo.sysmail_delete_mailitems_sp @sent_before = @hoje
 execute msdb.dbo.sysmail_delete_log_sp 
  
 -- Excluir profile:
-execute msdb.dbo.sysmail_delete_profile_sp @profile_name = 'Agenda Licitação'
+execute msdb.dbo.sysmail_delete_profile_sp @profile_name = 'NOME EMAIL'
  
 -- Excluir conta:
-execute msdb.dbo.sysmail_delete_account_sp @account_name = 'Agenda Licitação'
+execute msdb.dbo.sysmail_delete_account_sp @account_name = 'NOME EMAIL'
  
 */
