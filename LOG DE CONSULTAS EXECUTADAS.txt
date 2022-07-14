@@ -1,0 +1,9 @@
+Use <database>
+SELECT TOP 100 
+       execquery.last_execution_time AS [Date Time], 
+       execsql.text AS [Script] 
+  FROM sys.dm_exec_query_stats AS execquery
+ CROSS 
+ APPLY sys.dm_exec_sql_text(execquery.sql_handle) AS execsql
+WHERE execsql.text LIKE '%GERAR_COMISSAO_TELEVENDAS_LIQUIDACOES%'
+ORDER BY execquery.last_execution_time DESC

@@ -1,0 +1,20 @@
+CREATE NONCLUSTERED INDEX [#IX_TEMP_ESCRITA_0001]                                                      
+                    ON [dbo].[#ESCRITA_FISCAL]                                                      
+        ([COD_SIT]           ,[FORMULARIO_ORIGEM]  ,[NF_ESPECIE],[COD_ITEM]         ,[CFOP])                                                      
+INCLUDE ([TAB_MASTER_ORIGEM] ,[REG_MASTER_ORIGEM]  ,[IND_OPER]  ,[REGISTRO_CONTROLE],[REGISTRO_CONTROLE_II],                
+         [VL_DESC]   ,[VL_MERC]            ,[CST_ICMS]  ,[VL_BC_ICMS]       ,[ALIQ_ICMS],                                        
+   [VL_ICMS]           ,[VL_BC_ICMS_ST]      ,[ALIQ_ST]   ,[VL_ICMS_ST]       ,[CST_IPI],                                                      
+   [VL_BC_IPI]         ,[ALIQ_IPI]           ,[VL_IPI]    ,[CST_PIS]  ,[QUANT_BC_PIS],                                                      
+   [VL_BC_PIS]         ,[ALIQ_PIS]           ,[VL_PIS]    ,[CST_COFINS]       ,[QUANT_BC_COFINS],                                                      
+         [VL_BC_COFINS]      ,[ALIQ_COFINS]        ,[VL_COFINS] ,[DESCR_COMPL]      ,[QTD],                                                      
+         [UNIDADE_MEDIDA]    ,[COD_NAT]            ,[COD_MOD]   ,[COD_PART]         ,[IND_EMIT],                                                      
+   [DT_DOC]           ,[DT_E_S]             ,[NUM_DOC]   ,[SER]              ,[CHV_NFE],                          
+   [IND_PGTO]          ,[IND_FRT]            ,[VL_DOC]    ,[VL_ABAT_NT]       ,[VL_FRT],                                                      
+   [VL_SEG]            ,[VL_OUT_DA]          ,[VL_PIS_ST] ,[VL_COFINS_ST]     ,[VL_BC_RED])                                                                
+CREATE NONCLUSTERED INDEX [#IX_ESCRITA_FISCAL_0002]                                                      
+                       ON [dbo].[#ESCRITA_FISCAL]                                                      
+        ([NF_ESPECIE] ,[COD_ITEM])                                                      
+INCLUDE ([COD_NAT]    ,[DESC_NAT]       ,[COD_SIT]         ,[VL_DOC]     ,[NCM],                                                      
+    [DESCR_COMPL],[UNIDADE_MEDIDA]   ,[CFOP]              ,[UNID_DESC]  ,[COD_PART],                                                      
+   [NOME_PART]  ,[INSCRICAO_FEDERAL],[INSCRICAO_ESTADUAL],[COD_SUFRAMA],[END],                                                      
+   [NUM]        ,[BAIRRO]           ,[MUNICIPIO_PART]    ,[PAIS])     

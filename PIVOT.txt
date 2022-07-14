@@ -1,0 +1,42 @@
+DECLARE @COLUNAS_PIVOT VARCHAR(MAX)
+DECLARE @COMANDO_SQL   VARCHAR(MAX)
+
+DECLARE @DATA_INI  DATETIME                    
+DECLARE @DATA_FIM  DATETIME                                  
+                    
+SET @DATA_INI = '01/01/2021'--:DATA_I                    
+SET @DATA_FIM = '31/12/2021'--:DATA_FIM   
+
+        
+IF OBJECT_ID('TEMPDB..#TEMP_TOTAIS') IS NOT NULL DROP TABLE #TEMP_TOTAIS        
+ 
+ SELECT * FROM (
+ 
+   SELECT X.EMPRESA_CONTABIL AS EMPRESA       
+        , SUM(A.VENDA_BRUTA)   AS VENDA_BRUTA        
+        --, SUM(A.VENDA_LIQUIDA) AS VENDA_LIQUIDA
+		, DATENAME(MONTH,A.MOVIMENTO) AS MES
+        
+     --INTO #TEMP_TOTAIS         
+     FROM VENDAS_ANALITICAS                   A WITH(NOLOCK)                            
+     JOIN EMPRESAS_USUARIAS                   X WITH(NOLOCK) ON X.EMPRESA_USUARIA  = A.EMPRESA                            
+    --OUTER                             
+    --APPLY DBO.[RETORNA_CUSTO_PRODUTO]( A.PRODUTO , A.EMPRESA , MONTH(A.MOVIMENTO) , YEAR(A.MOVIMENTO) ) B                            
+                            
+    WHERE A.MOVIMENTO BETWEEN @DATA_INI AND @DATA_FIM        
+   --AND ISNULL( A.CLIENTE , 9999999 ) > 1000         
+   --AND ISNULL( A.VENDEDOR , 0 ) = 67      --SEM VENDEDOR                     
+    GROUP         
+       BY X.EMPRESA_CONTABIL       
+         ,DATENAME(MONTH,A.MOVIMENTO)
+    
+	) DATA_TABLE
+
+	PIVOT 
+
+	( --SUM(VENDA_LIQUIDA)
+	  SUM(VENDA_BRUTA)
+	  FOR MES IN ([JANEIRO],[FEVEREIRO],[MARÇO],[ABRIL],[MAIO],[JUNHO],[JULHO],[AGOSTO],[SETEMBRO],[OUTUBRO],[NOVEMBRO],[DEZEMBRO])) PIVOT_TABLE
+	 ORDER BY 1   
+		--[Fevereiro],[Setembro],[Abril],[Junho],[Julho],[Maio],[Novembro],[Março],[Dezembro],[Agosto],[Janeiro],[Outubro]
+

@@ -1,0 +1,11 @@
+----------- NA MASTER DO LOJA --------------
+PRINT N'Parte do Victor ....(Sem transação)';
+EXEC sp_changedbowner 'sa'
+EXEC sp_configure 'show advanced option', 1
+reconfigure
+exec sp_configure 'clr enable' , 1
+exec sp_configure 'show advanced options', 0
+reconfigure
+DECLARE @sql nvarchar(4000)
+SET @sql = 'ALTER DATABASE [' + DB_NAME() + '] SET TRUSTWORTHY ON'
+EXEC (@sql);

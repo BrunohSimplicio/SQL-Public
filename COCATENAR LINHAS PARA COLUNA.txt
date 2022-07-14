@@ -1,0 +1,61 @@
+
+DECLARE 
+    @CATEGORIA VARCHAR(MAX),
+    @DESCRICOES VARCHAR(MAX)
+ 
+DECLARE @TABELA TABLE (
+    CATEGORIA VARCHAR(200),
+    DESCRICAO VARCHAR(200),
+    DESCRICOES VARCHAR(200)
+)
+ 
+INSERT @TABELA ( 
+    CATEGORIA,
+    DESCRICAO
+)
+SELECT  
+    GUIA,
+    NF_NUMERO
+FROM
+    FECHAMENTOS_CONSIGNACOES_RESULTADOS
+WHERE FECHAMENTO_CONSIGNACAO = @FECHAMENTO_CONSIGNACAO
+GROUP BY 
+    GUIA,
+    NF_NUMERO
+ORDER BY 
+    GUIA,
+    NF_NUMERO
+ 
+
+UPDATE 
+    @TABELA
+SET
+    @DESCRICOES = DESCRICOES = COALESCE(CASE COALESCE(@CATEGORIA, '')
+                                WHEN CATEGORIA THEN @DESCRICOES + ', ' + DESCRICAO
+                                ELSE DESCRICAO
+                            END, ''),
+    @CATEGORIA = ISNULL(CATEGORIA, '')
+
+--------------------------------------
+
+
+--DECLARE @ENTIDADE NUMERIC(15) = 63370                 
+DECLARE @TELEFONE VARCHAR(MAX)        
+        
+SELECT @TELEFONE = COALESCE(@TELEFONE + ' || ', '') + CONCAT(DDD, ' ', NUMERO)       
+  FROM TELEFONES A       
+ WHERE A.ENTIDADE = @ENTIDADE    
+        
+    -----------------------------
+stuff
+
+SELECT CLIENTE,
+       STUFF ((SELECT '; ' + CONCAT(PRODUTO,' - ',DESCRICAO)
+                 FROM #TEMP_FINAL AS T
+                 WHERE T.CLIENTE = I.CLIENTE
+                 FOR XML PATH('')),
+              1, 2, '') AS LISTA
+  FROM #TEMP_FINAL AS I
+  WHERE MELHOR_DATA_FINAL = CAST(GETDATE() AS DATE) 
+   AND TIPO = 1
+  GROUP BY CLIENTE; 
