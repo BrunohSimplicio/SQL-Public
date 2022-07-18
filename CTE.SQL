@@ -1,8 +1,8 @@
-CREATE VIEW VW_ULT_ENTRADA_NF_COMPRA                      
+CREATE VIEW VW_TABELA                      
                       
 AS                      
                       
-WITH ULTIMA_ENTRADAS                      
+WITH CTE                      
                       
 AS                      
 (                      
@@ -12,9 +12,9 @@ SELECT ROW_NUMBER() OVER(PARTITION BY DBO.FN_EMPRESA_CONTABIL( A.EMPRESA ) , B.P
      , A.MOVIMENTO                                                                      AS MOVIMENTO                
      , A.EMPRESA                                                                        AS EMPRESA                          
      , B.PRODUTO                                                                        AS PRODUTO                             
-  FROM NF_COMPRA          A WITH(NOLOCK)                              
-  JOIN NF_COMPRA_PRODUTOS B WITH(NOLOCK) ON A.NF_COMPRA       = B.NF_COMPRA                              
-  JOIN OPERACOES_FISCAIS  C WITH(NOLOCK) ON C.OPERACAO_FISCAL = B.OPERACAO_FISCAL                              
+  FROM NOTAS_COMPRA       A WITH(NOLOCK)                              
+  JOIN NOTAS_COMPRA_ITENS B WITH(NOLOCK) ON A.NF_COMPRA       = B.NF_COMPRA                              
+  JOIN OP_FISCAIS         C WITH(NOLOCK) ON C.OPERACAO_FISCAL = B.OPERACAO_FISCAL                              
  WHERE C.TIPO_OPERACAO NOT IN( 10 )       
    AND ISNULL(C.AFETA_FORMACAO_PRECO,'N') = 'S'    
    AND A.EMPRESA NOT IN(500) --APENAS LICITACAÇÃO CONFORME FALADO POR GLAUCO      
@@ -31,5 +31,5 @@ SELECT A.NF_COMPRA
      , A.EMPRESA                      
      , A.PRODUTO                
      , CASE WHEN A.NF_COMPRA = MAX( A.NF_COMPRA ) OVER ( PARTITION BY PRODUTO ORDER BY MOVIMENTO DESC ) THEN 1 ELSE 0 END AS ULTIMA_MOVIMENTACAO                
-  FROM ULTIMA_ENTRADAS   A                      
+  FROM CTE   A                      
   WHERE ID = 1
