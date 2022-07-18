@@ -14,15 +14,15 @@ reconfigure
 -- Adicionar conta de e-mail
 execute msdb.dbo.sysmail_add_account_sp
     -- Dados fíxos
-    @mailserver_name = 'agenda.licitacaoproh@gmail.com', -- endereço do servidor de envio de e-mails
+    @mailserver_name = 'EMAIL@EMAIL.com', -- endereço do servidor de envio de e-mails
     @port = 587, -- porta de comunicação
     @enable_ssl = 1, -- habilitar SSL (criptografia durante o envio de dados)
     -- Dados da sua conta
     @account_name = 'Gmail_Conta', -- nome da conta dentro do SQL
     @display_name = 'Banco SQL',   -- Nome que aparecerá como remetente do e-mail
-    @email_address = 'agenda.licitacaoproh@gmail.com',
-    @username = 'agenda.licitacaoproh@gmail.com',
-    @password = 'Pr0cf1t@admin'
+    @email_address = 'EMAIL@EMAIL.com',
+    @username = 'EMAIL@EMAIL.com',
+    @password = 'SENHA'
  
 -- Passo 4) Adicionar perfil e associar a conta
 -- Adicionar perfil para envio de e-mail
@@ -42,7 +42,7 @@ execute msdb.dbo.sysmail_add_profileaccount_sp
 -- ENVIAR UM E-MAIL DE TESTES PELO SQL! (help: https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-send-dbmail-transact-sql)
 execute msdb.dbo.sp_send_dbmail 
     @profile_name = 'Gmail_Perfil',
-    @recipients = 'francisco.moraes@procfit.com.br',
+    @recipients = 'EMAIL@EMAIL.com.br',
     @subject = 'Assunto - Teste Database Mail',
     @body = 'Corpo da mensagem de teste.'
  
