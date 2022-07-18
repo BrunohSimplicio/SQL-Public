@@ -1,4 +1,0 @@
-select a.* 
-from PRODUTOS a
-left outer join #PRODUTO b on (a.PRODUTO = b.PRODUTO)
-where b.PRODUTO is null;
