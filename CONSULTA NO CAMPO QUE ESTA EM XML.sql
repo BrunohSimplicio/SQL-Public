@@ -1,5 +1,5 @@
 SELECT TOP 100 *
-  FROM ERPM_UPLOAD
+  FROM TABELA_XML
  WHERE CONTEUDO.value('(/Transacao/@Tabela)[1]', 'VARCHAR(MAX)') LIKE '%FINALIZADO%'
    AND CONTEUDO.value('(/Transacao/Linha/ECF_CUPOM)[1]', 'VARCHAR(MAX)') = 0
  ORDER
