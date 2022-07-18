@@ -2,4 +2,4 @@
 
 select OBJECT_NAME(parent_id) as tabela,* 
 from sys.triggers
-where OBJECT_NAME(parent_id) = 'PRODUTOS_PARAMETROS_EMPRESAS'
+where OBJECT_NAME(parent_id) = 'NOME_TABELA'
