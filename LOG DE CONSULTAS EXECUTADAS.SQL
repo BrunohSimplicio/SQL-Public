@@ -5,5 +5,5 @@ SELECT TOP 100
   FROM sys.dm_exec_query_stats AS execquery
  CROSS 
  APPLY sys.dm_exec_sql_text(execquery.sql_handle) AS execsql
-WHERE execsql.text LIKE '%GERAR_COMISSAO_TELEVENDAS_LIQUIDACOES%'
+WHERE execsql.text LIKE '%TEXTO A SE PROCURAR%'
 ORDER BY execquery.last_execution_time DESC
