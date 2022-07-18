@@ -1,12 +1,13 @@
 INSERT INTO CONVENIOS_PRODUTOS
 
-            (ENTIDADE,
-             PRODUTO,
-			 TIPO,
-			 DESCONTO_PRODUTO,
-			 CO_PAGAMENTO,
-			 DESCONTO_PRAZO
-			 )
+           (ENTIDADE,
+            PRODUTO,
+            TIPO,
+            DESCONTO_PRODUTO,
+            CO_PAGAMENTO,
+            DESCONTO_PRAZO
+            )
+
 
 SELECT 
        ENTIDADE,
