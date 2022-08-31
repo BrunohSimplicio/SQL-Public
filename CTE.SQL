@@ -24,4 +24,4 @@ SELECT A.NF
      , A.PRODUTO                
      , CASE WHEN A.NF = MAX( A.NF ) OVER ( PARTITION BY PRODUTO ORDER BY MOVIMENTO DESC ) THEN 1 ELSE 0 END AS ULTIMA_MOVIMENTACAO                
   FROM CTE   A                      
-  WHERE ID = 1
+ WHERE ID = 1
