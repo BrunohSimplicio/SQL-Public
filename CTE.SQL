@@ -7,7 +7,7 @@ WITH CTE
 AS                      
 (                      
                       
-SELECT ROW_NUMBER() OVER(PARTITION BY DBO.FN_EMPRESA_CONTABIL( A.EMP ) , B.PROD ORDER BY A.MOV DESC , A.NF DESC ) AS ID                       
+SELECT ROW_NUMBER() OVER(PARTITION BY A.EMP, B.PROD ORDER BY A.MOV DESC , A.NF DESC ) AS ID                       
      , A.NF  AS NF                
      , A.MOV AS MOVIMENTO                
      , A.EMP AS EMPRESA                          
