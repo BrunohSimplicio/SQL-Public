@@ -1,0 +1,16 @@
+CREATE FUNCTION [dbo].[CALCULAR_JUROS_COMPOSTOS]    
+(    
+@PERIODO   NUMERIC  ,    
+@VALOR     NUMERIC(15,2),    
+@JUROS_DIA NUMERIC(15,2)    
+)    
+RETURNS NUMERIC(15,2)    
+AS    
+BEGIN    
+    
+DECLARE @RESULTADO    NUMERIC(15,2)    
+          
+    SET @RESULTADO = ABS((@VALOR * POWER((1 + @JUROS_DIA / 100),@PERIODO)) - @VALOR)    
+        
+   RETURN(  @RESULTADO )    
+END 
