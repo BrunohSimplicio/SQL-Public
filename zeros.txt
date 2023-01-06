@@ -1,0 +1,6 @@
+CREATE FUNCTION [dbo].[ZEROS] ( @V VARCHAR(20) , @T INT ) RETURNS VARCHAR(25) AS  
+BEGIN  
+     DECLARE @S VARCHAR(255)  
+     SET @S = REPLICATE ( '0' , @T ) + CAST ( @V AS VARCHAR(20) )  
+     RETURN ( SUBSTRING ( @S , (LEN(@S)-@T) +1 , @T ) )  
+END  
