@@ -1,5 +1,5 @@
 #Transaction Isolation Level
 
-```sql
+```SQL
 DBCC USEROPTIONS
 ```
