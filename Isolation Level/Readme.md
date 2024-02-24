@@ -11,94 +11,82 @@ DBCC USEROPTIONS
 ```
 # Usando o Transaction Isolation Level corretamente
 Para exemplificar estas explicações, e saber se está usando o Transaction Isolation Level corretamente, abra uma conexão com o SQL Server e execute o código abaixo. Ele irá criar um database e duas tabelas com alguns dados, onde serão explicados os tipos de isolamentos e de quebra um exemplo de dead lock.
-```SQL
-CREATE DATABASE dbNogare
-GO
 
-USE dbNogare
-GO
-
-CREATE TABLE tbIsolationLevel
-(Id INT IDENTITY,
- Col1 varchar(10),
- Col2 varchar(10),
- Col3 varchar(10)
-)
-GO
-
-INSERT INTO tbIsolationLevel(Col1,Col2,Col3)
-VALUES ('AAAAA','BBBBB','CCCCC')
-GO 5
-
-CREATE TABLE tbDeadlock (id INT)
-GO
-
-INSERT INTO tbDeadlock(ID)
-VALUES (1), (2)
-
-GO
-```
 Quando alteramos o nivel de isolamento, ele é aplicado à conexão que o alterou. Se você abrir uma nova conexão com o SQL Server e verificar qual é o nivel de isolamento desta transação, você verá que voltou para o padrão. Read Committed.
-# Transaction Isolation Level – Read Commited
-O READ COMMITTED nos garante uma leitura somente do que já está “comitado” no banco, isso é, garante que o dado que está sendo lido foi realmente escrito no banco e não é uma leitura suja ou fantasma, causado por alguma outra transação. Pelo fato dele só ler as informações realmente escritas no banco, se uma outra transação estiver trabalhando com a tabela que você quer ler, o SQL irá esperar a transação liberar a tabela para então fazer a leitura. Isso gera LOCK (pela outra transação) e WAIT (pela sua).
 
-Para entender na prática esse tipo de isolamento, abra duas conexões diferentes com a tabela tbNogare. Execute o primeiro bloco de código em uma delas, contanto que o segundo bloco seja executado segunda conexão. Após iniciar a execução do primeiro, vá até a segunda conexão e execute em simultâneo, deixando ambas rodando. Você irá ver o SQL Server terminar de executar a primeira transação para então iniciar a segunda.
+# Transaction Isolation Level – Read Commited
+> [!NOTE]
+> Este é o isolation level default usado pelo SQL
+
+O READ COMMITTED nos garante uma leitura somente do que já está “commitado” no banco, isso é, garante que o dado que está sendo lido foi realmente escrito no banco e não é uma leitura suja ou fantasma, causado por alguma outra transação. Pelo fato dele só ler as informações realmente escritas no banco, se uma outra transação estiver trabalhando com a tabela que você quer ler, o SQL irá esperar a transação liberar a tabela para então fazer a leitura. Isso gera LOCK (pela outra transação) e WAIT (pela sua).
+
+Para entender na prática esse tipo de isolamento, abra duas conexões diferentes com a mesma tabela. Execute o primeiro bloco de código em uma delas, contanto que o segundo bloco seja executado segunda conexão. Após iniciar a execução do primeiro, vá até a segunda conexão e execute em simultâneo, deixando ambas rodando. Você irá ver o SQL Server terminar de executar a primeira transação para então iniciar a segunda.
 
 ```SQL
 /*********  RODAR NA CONEXÃO 1 *********/
 BEGIN TRAN
-    UPDATE tbIsolationLevel set Col1 = 'DDDDD' where id = 1
-    WAITFOR DELAY '00:00:10'
-ROLLBACK TRAN
+
+ UPDATE DimEmployee 
+    SET MiddleName = 'Teste 1' 
+  WHERE EmployeeKey = 1
+WAITFOR DELAY '00:00:10'
+
+--ROLLBACK
 
 /*********  RODAR NA CONEXÃO 2 *********/
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 SELECT * FROM tbIsolationLevel
 ```
+> [!IMPORTANT]
+> Se a consulta 2 for executada filtrando apenas o EmployeeKey <> 1 os valores serão retornados.
+
 # Transaction Isolation Level – Read Uncommited
 O READ UNCOMMITTED evita que o SQL Server dê um LOCK na tabela de leitura por causa de uma transação, isso faz com que também não gere um WAIT em outra transação. Porém, este processo permite uma leitura suja dos dados, entregando a informação “errada” em alguns cenários. Quando se utiliza este nível de isolamento, é possível ler os dados de uma tabela mesmo ela sendo utilizada dentro de uma transação longa que executa vários processos (INSERTS, UPDATES e DELETES). Estes passos intermediários que são executados antes do COMMIT no final, podem ser lidos e retornados. Quando isso acontece, chamamos de leitura suja (Dirty Read, do inglês).
 
-Veja os códigos abaixo, e execute cada bloco simultaneamente em uma conexão diferente.
 ```SQL
 /*********  RODAR NA CONEXÃO 1 *********/
 BEGIN TRAN
-    UPDATE tbIsolationLevel set Col1 = 'DDDDD' where id = 1
-    WAITFOR DELAY '00:00:10'
-ROLLBACK TRAN
+
+ UPDATE DimEmployee 
+    SET MiddleName = 'Teste 1' 
+  WHERE EmployeeKey = 1
+WAITFOR DELAY '00:00:10'
+
+--ROLLBACK
 
 No código abaixo existem duas consultas. Ambas podem ler dados sujos, a primeira alterando o isolation level e a segundo consumindo dados com o hint WITH (NOLOCK). No final, o resultado de ambas serão os mesmos.
 
 /*********  RODAR NA CONEXÃO 2 *********/
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
-SELECT * FROM tbIsolationLevel
+SELECT * FROM DimEmployee
 
 -- Usando o hint NOLOCK
-SELECT * FROM tbIsolationLevel with (nolock)
+SELECT * FROM DimEmployee WITH(NOLOCK)
 ```
-Transaction Isolation Level – Repeatable Read
-Já o REPEATABLE READ garante que a transação que leia uma tabela mais do que uma vez dentro desta mesma transação, possa fazer isso sem ler dados diferentes dos registros já encontrados da primeira vez. Nenhuma alteração (UPDATE) dos dados já lidos anteriormente serão modificados na leitura (são alterados na tabela), mas novos registros (INSERT) são retornados nesta segunda leitura.
 
-Veja nos blocos de código abaixo este processo.
+# Transaction Isolation Level – Repeatable Read
+Já o REPEATABLE READ garante que a transação que leia uma tabela mais do que uma vez dentro desta mesma transação, possa fazer isso sem ler dados diferentes dos registros já encontrados da primeira vez. Nenhuma alteração (UPDATE) dos dados já lidos anteriormente serão modificados na leitura (são alterados na tabela), mas novos registros (INSERT) são retornados nesta segunda leitura.
 
 ```SQL
 /********* RODAR NA CONEXÃO 1 *********/
 SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
 
 BEGIN TRAN
-  SELECT * FROM tbIsolationLevel
+  
+  SELECT * FROM DimEmployee
   WAITFOR DELAY '00:00:10'
-  SELECT * FROM tbIsolationLevel 
-ROLLBACK TRAN
+  
+  SELECT * FROM DimEmployee 
 ```
 Veja o SQL Server gerando um WAIT para executar o UPDATE, mas não o gera quando roda o INSERT, ele simplesmente insere os dados.
 
 ```SQL
 /********* RODAR NA CONEXÃO 2 *********/
-UPDATE tbIsolationLevel
- set Col1 = 'DDDDD'
- where id = 1
+ UPDATE DimEmployee 
+    SET MiddleName = 'Teste 1' 
+  WHERE EmployeeKey = 1
 
-INSERT INTO tbIsolationLevel(Col1,Col2,Col3)
+INSERT INTO DimEmployee(Col1,Col2,Col3)
 VALUES ('DDDDD','EEEEE','FFFFF')
 ```
 # Transaction Isolation Level – Serializable
