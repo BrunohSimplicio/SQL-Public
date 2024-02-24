@@ -6,9 +6,11 @@ Bom, por exemplo, olhar somente por essa ótica pode estar errado! Acima de tudo
 Vale lembrar que o SQL Server é um SGBD que implementa o conceito de ACID (Atomicidade, Consistência, Isolamento e Durabilidade) e os níveis de isolamento atuam diretamente neste conceito. Outra coisa que é bom lembrar é que os níveis de isolamento impactam diretamente na quantidade de LOCKs e WAITs gerados no SQL.
 
 Por padrão, o SQL Server tem o Isolation Level configurado para READ COMMITED. Isso pode ser confirmado rodando esta linha de código abaixo, e encontrando o resultado de ISOLATION LEVEL.
+
 ```SQL
 DBCC USEROPTIONS
 ```
+
 # Usando o Transaction Isolation Level corretamente
 Para exemplificar estas explicações, e saber se está usando o Transaction Isolation Level corretamente, abra uma conexão com o SQL Server e execute o código abaixo. Ele irá criar um database e duas tabelas com alguns dados, onde serão explicados os tipos de isolamentos e de quebra um exemplo de dead lock.
 
@@ -275,31 +277,41 @@ Esta funcionalidade, por padrão, vem desabilitada do banco de dados, e para uti
 USE MASTER
 GO
 
-ALTER DATABASE dbNogare
+ALTER DATABASE AdventureWorksDW2017
 SET ALLOW_SNAPSHOT_ISOLATION ON
 GO
 
-USE dbNogare
+USE AdventureWorksDW2017
 GO
 ```
+
 Depois de habilitar o Snapshot Isolation Level no banco de dados, é hora de ver os blocos de códigos que possibilitam este nivel de isolamento.
+
 ```SQL
 /*********  RODAR NA CONEXÃO 1 *********/
 SET TRANSACTION ISOLATION LEVEL SNAPSHOT
 BEGIN TRAN
-    SELECT * FROM tbIsolationLevel
+    SELECT * FROM DimEmployee WHERE EmployeeKey = 1
     WAITFOR DELAY '00:00:10'
-    SELECT * FROM tbIsolationLevel
-    UPDATE tbIsolationLevel set Col1 = 'XXXXX' where id = 2
+
+    SELECT * FROM DimEmployee WHERE EmployeeKey = 1
+
+     UPDATE DimEmployee 
+        SET MiddleName = 'Teste Snapshot' 
+      WHERE EmployeeKey = 2
     WAITFOR DELAY '00:00:10'
 COMMIT TRAN
 
 
 
 
+
 /*********  RODAR NA CONEXÃO 1 *********/
-UPDATE tbIsolationLevel set Col1 = 'NNNNNN' where id = 1
-SELECT * FROM tbIsolationLevel
+ UPDATE DimEmployee 
+    SET MiddleName = 'Teste Snapshot 22222' 
+  WHERE EmployeeKey = 1
+
+  SELECT * FROM DimEmployee WHERE EmployeeKey = 1
 ```
 # Problemas com Dead Lock
 Por fim, o DEAD LOCK também causa um pouco de confusão com sua execução. A causa de um DEAK LOCK é quando uma transação espera uma liberação para seguir em frente. Porém, a transação que está segurando o processo (causando LOCK) está esperando a primeira transação terminar de processar alguma coisa. A grosso modo, é A esperando o B terminar e o B esperando o A terminar. Eles ficariam um esperando o outro até alguém “desistir”. Para isso, o SQL Server escolhe uma vítima de acordo com o início do processo e o grau de severidade que aquele processo pode ter. Normalmente a transação que começou por ultimo é a vítima, se desligando do processo (o SQL faz isso automaticamente) e dá um rollback nas alterações. Isso faz com que a transação que ganhou o processo termine suas atividades.
