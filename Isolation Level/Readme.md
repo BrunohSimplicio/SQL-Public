@@ -326,22 +326,26 @@ Para ver isso através de código, execute os blocos abaixo.
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 GO
 BEGIN TRAN
-    UPDATE tbDeadlock 
-    SET id = 12
-    WHERE id = 2
+    UPDATE DimEmployee 
+       SET MiddleName = 'DeadLock' + EmployeeKey
+     WHERE EmployeeKey = 3
     WAITFOR DELAY '00:00:10'
-    UPDATE tbDeadlock 
-    SET id = 11
-    WHERE id = 1
+
+    UPDATE DimEmployee 
+       SET MiddleName = 'DeadLock' + EmployeeKey
+     WHERE EmployeeKey = 4
 ROLLBACK TRAN
 /*********  RODAR NA CONEXÃO 2 *********/
 BEGIN TRAN
-    UPDATE tbDeadlock 
-    SET id = 11
-    WHERE id = 1
-    WAITFOR DELAY '00:00:10'
-    UPDATE tbDeadlock 
-    SET id = 12
-    WHERE id = 2
+
+    UPDATE DimEmployee 
+       SET MiddleName = 'DeadLock' + EmployeeKey
+     WHERE EmployeeKey = 4
+   WAITFOR DELAY '00:00:10'
+
+    UPDATE DimEmployee 
+       SET MiddleName = 'DeadLock' + EmployeeKey
+     WHERE EmployeeKey = 3
+
 ROLLBACK TRAN
 ```
