@@ -38,7 +38,7 @@ SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 SELECT * FROM tbIsolationLevel
 ```
 > [!IMPORTANT]
-> Se a consulta 2 for executada filtrando apenas o EmployeeKey <> 1 os valores serão retornados.
+> Se a consulta 2 for executada filtrando apenas o EmployeeKey <> 1 os valores serão retornados e não ocorrerá lock.
 
 # Transaction Isolation Level – Read Uncommited
 O READ UNCOMMITTED evita que o SQL Server dê um LOCK na tabela de leitura por causa de uma transação, isso faz com que também não gere um WAIT em outra transação. Porém, este processo permite uma leitura suja dos dados, entregando a informação “errada” em alguns cenários. Quando se utiliza este nível de isolamento, é possível ler os dados de uma tabela mesmo ela sendo utilizada dentro de uma transação longa que executa vários processos (INSERTS, UPDATES e DELETES). Estes passos intermediários que são executados antes do COMMIT no final, podem ser lidos e retornados. Quando isso acontece, chamamos de leitura suja (Dirty Read, do inglês).
@@ -73,21 +73,90 @@ SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
 
 BEGIN TRAN
   
-  SELECT * FROM DimEmployee
+  SELECT * FROM DimEmployee WHERE ParentEmployeeKey = 18 and LoginID = 'adventure-works\guy1'
   WAITFOR DELAY '00:00:10'
   
-  SELECT * FROM DimEmployee 
+  SELECT * FROM DimEmployee WHERE ParentEmployeeKey = 18 and LoginID = 'adventure-works\guy1'
+  
+  rollback
 ```
 Veja o SQL Server gerando um WAIT para executar o UPDATE, mas não o gera quando roda o INSERT, ele simplesmente insere os dados.
 
 ```SQL
 /********* RODAR NA CONEXÃO 2 *********/
+/********* RODAR NA CONEXÃO 2 *********/
+-- Update
  UPDATE DimEmployee 
     SET MiddleName = 'Teste 1' 
   WHERE EmployeeKey = 1
 
-INSERT INTO DimEmployee(Col1,Col2,Col3)
-VALUES ('DDDDD','EEEEE','FFFFF')
+
+--Insert
+INSERT INTO DimEmployee 
+(
+       ParentEmployeeKey
+     , EmployeeNationalIDAlternateKey
+     , ParentEmployeeNationalIDAlternateKey
+     , SalesTerritoryKey
+     , FirstName
+     , LastName
+     , MiddleName
+     , NameStyle
+     , Title
+     , HireDate
+     , BirthDate
+     , LoginID
+     , EmailAddress
+     , Phone
+     , MaritalStatus
+     , EmergencyContactName
+     , EmergencyContactPhone
+     , SalariedFlag
+     , Gender
+     , PayFrequency
+     , BaseRate
+     , VacationHours
+     , SickLeaveHours
+     , CurrentFlag
+     , SalesPersonFlag
+     , DepartmentName
+     , StartDate
+     , EndDate
+     , Status
+     , EmployeePhoto
+)
+SELECT ParentEmployeeKey
+     , EmployeeNationalIDAlternateKey
+     , ParentEmployeeNationalIDAlternateKey
+     , SalesTerritoryKey
+     , 'Teste' as FirstName
+     , 'Isolation' as LastName
+     , 'Level' as MiddleName
+     , NameStyle
+     , Title
+     , HireDate
+     , BirthDate
+     , LoginID
+     , EmailAddress
+     , Phone
+     , MaritalStatus
+     , EmergencyContactName
+     , EmergencyContactPhone
+     , SalariedFlag
+     , Gender
+     , PayFrequency
+     , BaseRate
+     , VacationHours
+     , SickLeaveHours
+     , CurrentFlag
+     , SalesPersonFlag
+     , DepartmentName
+     , StartDate
+     , EndDate
+     , Status
+     , EmployeePhoto 
+  FROM DimEmployee 
+ WHERE EmployeeKey = 1
 ```
 # Transaction Isolation Level – Serializable
 Uma variação mais completa do REPEATABLE READ é o SERIALIZABLE que bloqueia qualquer modificação de dados nas colunas que são consultadas, independente da modificação ser um UPDATE ou um INSERT. Este nível de isolamento causa um LOCK na transação original e um WAIT na segunda transação tanto para o UPDATE quanto para INSERT.
