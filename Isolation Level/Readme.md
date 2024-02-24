@@ -53,9 +53,10 @@ BEGIN TRAN
 WAITFOR DELAY '00:00:10'
 
 --ROLLBACK
-
+```
 No código abaixo existem duas consultas. Ambas podem ler dados sujos, a primeira alterando o isolation level e a segundo consumindo dados com o hint WITH (NOLOCK). No final, o resultado de ambas serão os mesmos.
 
+```sql
 /*********  RODAR NA CONEXÃO 2 *********/
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
 SELECT * FROM DimEmployee
@@ -83,7 +84,6 @@ BEGIN TRAN
 Veja o SQL Server gerando um WAIT para executar o UPDATE, mas não o gera quando roda o INSERT, ele simplesmente insere os dados.
 
 ```SQL
-/********* RODAR NA CONEXÃO 2 *********/
 /********* RODAR NA CONEXÃO 2 *********/
 -- Update
  UPDATE DimEmployee 
@@ -165,20 +165,90 @@ Veja este processo nos códigos abaixo:
 ```SQL
 /*********  RODAR NA CONEXÃO 1 *********/
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+
 BEGIN TRAN
-    SELECT * FROM tbIsolationLevel
-    WAITFOR DELAY '00:00:10'
-    SELECT * FROM tbIsolationLevel
-ROLLBACK TRAN
+  
+  SELECT * FROM DimEmployee WHERE ParentEmployeeKey = 18 and LoginID = 'adventure-works\guy1'
+  WAITFOR DELAY '00:00:10'
+  
+  SELECT * FROM DimEmployee WHERE ParentEmployeeKey = 18 and LoginID = 'adventure-works\guy1'
+  
+  rollback
+```
+```sql
+/********* RODAR NA CONEXÃO 2 *********/
+-- Update
+ UPDATE DimEmployee 
+    SET MiddleName = 'Teste 1' 
+  WHERE EmployeeKey = 1
 
 
-
-
-/*********  RODAR NA CONEXÃO 2 *********/
-UPDATE tbIsolationLevel set Col1 = 'DDDDD' where id = 1
-
-INSERT INTO tbIsolationLevel(Col1,Col2,Col3)
-VALUES ('DDDDD','EEEEE','FFFFF')
+--Insert
+INSERT INTO DimEmployee 
+(
+       ParentEmployeeKey
+     , EmployeeNationalIDAlternateKey
+     , ParentEmployeeNationalIDAlternateKey
+     , SalesTerritoryKey
+     , FirstName
+     , LastName
+     , MiddleName
+     , NameStyle
+     , Title
+     , HireDate
+     , BirthDate
+     , LoginID
+     , EmailAddress
+     , Phone
+     , MaritalStatus
+     , EmergencyContactName
+     , EmergencyContactPhone
+     , SalariedFlag
+     , Gender
+     , PayFrequency
+     , BaseRate
+     , VacationHours
+     , SickLeaveHours
+     , CurrentFlag
+     , SalesPersonFlag
+     , DepartmentName
+     , StartDate
+     , EndDate
+     , Status
+     , EmployeePhoto
+)
+SELECT ParentEmployeeKey
+     , EmployeeNationalIDAlternateKey
+     , ParentEmployeeNationalIDAlternateKey
+     , SalesTerritoryKey
+     , 'Teste' as FirstName
+     , 'Isolation' as LastName
+     , 'Level' as MiddleName
+     , NameStyle
+     , Title
+     , HireDate
+     , BirthDate
+     , LoginID
+     , EmailAddress
+     , Phone
+     , MaritalStatus
+     , EmergencyContactName
+     , EmergencyContactPhone
+     , SalariedFlag
+     , Gender
+     , PayFrequency
+     , BaseRate
+     , VacationHours
+     , SickLeaveHours
+     , CurrentFlag
+     , SalesPersonFlag
+     , DepartmentName
+     , StartDate
+     , EndDate
+     , Status
+     , EmployeePhoto 
+  FROM DimEmployee 
+ WHERE EmployeeKey = 1
 ```
 # Transaction Isolation Level – Snapshot
 Uma alternativa para evitar LOCK e WAIT nas tabelas, e também garantir que os dados modificados sejam escritos e não tenha leitura suja é o SNAPSHOT. Ele permite tal ação porque ele copia os dados alterados para a tempdb, possibilitando ler os dados originais durante a transação, mesmo que eles sejam alterados. Quando uma transação tem um snapshot, ela coloca uma flag em todos os registros, para garantir que não foram alterados. Caso isso ocorra, ela altera a flag.
