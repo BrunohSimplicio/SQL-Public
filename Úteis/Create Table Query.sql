@@ -1,8 +1,28 @@
-DECLARE @TableName NVARCHAR(MAX) = 'nome_da_tabela'; --nome da tabela 
-DECLARE @SQL NVARCHAR(MAX) = '';
+DECLARE @TableName NVARCHAR(MAX) = 'Nome_da_tabela' --nome da tabela 
+      , @TempTable bit = 0
+	  , @TempTableGlobal bit = 0
+	  , @TableNameManual nvarchar(261) = 'Teste'
+      , @TargetTableName nvarchar(261) 
+      , @SQL NVARCHAR(MAX) = ''
+
+If @TableNameManual is not null
+Begin 
+	set @TargetTableName = @TableNameManual
+End 
+
+If @TempTable = 1
+Begin 
+	set @TargetTableName = '#' + Isnull(@TableNameManual, @TableName)
+End 
+
+If @TempTableGlobal = 1
+Begin 
+	set @TargetTableName = '##' + isnull(@TableNameManual, @TableName)
+End 
+
 
 -- Criação da tabela e colunas com vírgulas na frente das colunas, exceto a primeira
-SELECT @SQL = 'CREATE TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ' (' + CHAR(13) +
+SELECT @SQL = 'CREATE TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(isnull(@TargetTableName, t.name)) + ' (' + CHAR(13) +
     STUFF((
         SELECT CHAR(13) + '    ,' + QUOTENAME(c.name) + ' ' +
                 CASE
@@ -23,7 +43,7 @@ JOIN sys.schemas s ON t.schema_id = s.schema_id
 WHERE t.name = @TableName;
 
 -- PKs
-SELECT @SQL = @SQL + CHAR(13) + 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ' ADD CONSTRAINT ' + QUOTENAME(k.name) + ' PRIMARY KEY (' +
+SELECT @SQL = @SQL + CHAR(13) + 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(isnull(@TargetTableName, t.name)) + ' ADD CONSTRAINT ' + QUOTENAME(k.name) + ' PRIMARY KEY (' +
     STUFF((
         SELECT ', ' + QUOTENAME(c.name)
         FROM sys.index_columns ic
@@ -44,7 +64,7 @@ SELECT @SQL = @SQL + CHAR(13) + 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTE
         JOIN sys.columns c ON fkc.parent_object_id = c.object_id AND fkc.parent_column_id = c.column_id
         WHERE fkc.constraint_object_id = fk.object_id
         ORDER BY fkc.constraint_column_id
-        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + ') REFERENCES ' + QUOTENAME(rs.name) + '.' + QUOTENAME(rt.name) + ' (' +
+        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + ') REFERENCES ' + QUOTENAME(rs.name) + '.' +  QUOTENAME(isnull(@TargetTableName, t.name)) + ' (' +
     STUFF((
         SELECT ', ' + QUOTENAME(rc.name)
         FROM sys.foreign_key_columns fkc
@@ -60,7 +80,7 @@ JOIN sys.schemas rs ON rt.schema_id = rs.schema_id
 WHERE t.name = @TableName;
 
 -- Index non-cluster
-SELECT @SQL = @SQL + CHAR(13) + 'CREATE ' + CASE WHEN i.is_unique = 1 THEN 'UNIQUE ' ELSE '' END + 'INDEX ' + QUOTENAME(i.name) + ' ON ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ' (' +
+SELECT @SQL = @SQL + CHAR(13) + 'CREATE ' + CASE WHEN i.is_unique = 1 THEN 'UNIQUE ' ELSE '' END + 'INDEX ' + QUOTENAME(i.name) + ' ON ' + QUOTENAME(s.name) + '.' +  QUOTENAME(isnull(@TargetTableName, t.name)) + ' (' +
     STUFF((
         SELECT ', ' + QUOTENAME(c.name) + CASE WHEN ic.is_descending_key = 1 THEN ' DESC' ELSE ' ASC' END
         FROM sys.index_columns ic
@@ -74,5 +94,5 @@ JOIN sys.schemas s ON t.schema_id = s.schema_id
 WHERE i.is_primary_key = 0 AND i.is_unique_constraint = 0 AND t.name = @TableName;
 
 -- Query de Create
---PRINT @SQL
-SELECT CAST(@SQL AS XML);
+PRINT @SQL
+--SELECT CAST(@SQL AS XML);
