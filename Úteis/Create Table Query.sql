@@ -1,8 +1,9 @@
-DECLARE @TableName NVARCHAR(MAX) = 'Nome_da_tabela' --nome da tabela 
+DECLARE @TableName NVARCHAR(MAX) = 'Table_name' --nome da tabela 
       , @TempTable bit = 0
-	  , @TempTableGlobal bit = 0
-	  , @TableNameManual nvarchar(261) = 'Teste'
+      , @TempTableGlobal bit = 0
+      , @TableNameManual nvarchar(261) = '#Tabela_Destino'
       , @TargetTableName nvarchar(261) 
+      , @PrintGeneratedCode bit = 1
       , @SQL NVARCHAR(MAX) = ''
 
 If @TableNameManual is not null
@@ -57,14 +58,14 @@ JOIN sys.schemas s ON t.schema_id = s.schema_id
 WHERE k.type = 'PK' AND t.name = @TableName;
 
 -- FKs
-SELECT @SQL = @SQL + CHAR(13) + 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(fk.name) + ' ADD CONSTRAINT ' + QUOTENAME(fk.name) + ' FOREIGN KEY (' +
+SELECT @SQL = @SQL + CHAR(13) + 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(isnull(@TargetTableName, t.name)) + ' ADD CONSTRAINT ' + QUOTENAME(fk.name) + ' FOREIGN KEY (' +
     STUFF((
         SELECT ', ' + QUOTENAME(c.name)
         FROM sys.foreign_key_columns fkc
         JOIN sys.columns c ON fkc.parent_object_id = c.object_id AND fkc.parent_column_id = c.column_id
         WHERE fkc.constraint_object_id = fk.object_id
         ORDER BY fkc.constraint_column_id
-        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + ') REFERENCES ' + QUOTENAME(rs.name) + '.' +  QUOTENAME(isnull(@TargetTableName, t.name)) + ' (' +
+        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + ') REFERENCES ' + QUOTENAME(rs.name) + '.' +  QUOTENAME(t.name) + ' (' +
     STUFF((
         SELECT ', ' + QUOTENAME(rc.name)
         FROM sys.foreign_key_columns fkc
