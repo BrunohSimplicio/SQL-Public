@@ -61,6 +61,4 @@ Caso tenha dúvidas ou sugestões, entre em contato:
 Obrigado por visitar este repositório! Não esqueça de deixar uma estrela ⭐ se achar útil. 😄
 
 
-## ⭐ GitHub Stats
 
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=BrunohSimplicio&show_icons=true)
