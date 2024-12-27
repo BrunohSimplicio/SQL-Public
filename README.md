@@ -52,7 +52,9 @@ Contribuições são muito bem-vindas! Se você tem uma dica, script ou exemplo 
 3. Envie seu pull request com uma descrição detalhada.
 
 ---
+## ⭐ GitHub Stats
 
+![GitHub Stats]([https://github-readme-stats.vercel.app/api?username=iuricode&show_icons=true](https://github-readme-stats.vercel.app/api?username=BrunohSimplicio&show_icons=true))
 ## 📫 Contato
 
 Caso tenha dúvidas ou sugestões, entre em contato:
