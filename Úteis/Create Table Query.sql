@@ -1,7 +1,7 @@
-DECLARE @TableName NVARCHAR(MAX) = 'Table_name' --nome da tabela 
+DECLARE @TableName NVARCHAR(MAX) = 'TMP_MASTER_PROCESSAMENTO' --nome da tabela 
       , @TempTable bit = 0
       , @TempTableGlobal bit = 0
-      , @TableNameManual nvarchar(261) = '#Tabela_Destino'
+      , @TableNameManual nvarchar(261) = '#TEMP_TMP_MASTER_PROCESSAMENTO'
       , @TargetTableName nvarchar(261) 
       , @PrintGeneratedCode bit = 1
       , @SQL NVARCHAR(MAX) = ''
@@ -21,6 +21,8 @@ Begin
 	set @TargetTableName = '##' + isnull(@TableNameManual, @TableName)
 End 
 
+declare @Table_object_id int
+select @Table_object_id = object_id from sys.tables WHERE name = @TableName
 
 -- Criação da tabela e colunas com vírgulas na frente das colunas, exceto a primeira
 SELECT @SQL = 'CREATE TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(isnull(@TargetTableName, t.name)) + ' (' + CHAR(13) +
@@ -36,12 +38,13 @@ SELECT @SQL = 'CREATE TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(isnull(@Targ
                 CASE WHEN c.is_identity = 1 THEN ' IDENTITY(1,1)' ELSE '' END
         FROM sys.columns c
         JOIN sys.types tp ON c.user_type_id = tp.user_type_id
-        WHERE c.object_id = OBJECT_ID(@TableName)
+        WHERE c.object_id = @Table_object_id
         ORDER BY c.column_id
         FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 6, '') + CHAR(13) + ');'
 FROM sys.tables t
 JOIN sys.schemas s ON t.schema_id = s.schema_id
 WHERE t.name = @TableName;
+
 
 -- PKs
 SELECT @SQL = @SQL + CHAR(13) + 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(isnull(@TargetTableName, t.name)) + ' ADD CONSTRAINT ' + QUOTENAME(k.name) + ' PRIMARY KEY (' +
@@ -93,6 +96,7 @@ FROM sys.indexes i
 JOIN sys.tables t ON t.object_id = i.object_id
 JOIN sys.schemas s ON t.schema_id = s.schema_id
 WHERE i.is_primary_key = 0 AND i.is_unique_constraint = 0 AND t.name = @TableName;
+
 
 -- Query de Create
 PRINT @SQL
